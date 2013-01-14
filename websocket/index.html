@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+	<script src="/socket.io/socket.io.js" type="text/javascript"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+room: <input id="room" type="text" />
+<br />
+user: <input id="name" type="text" />
+<br />
+<button id="login">login</button>
+<br />
+<textarea id="board" cols="50" rows="20"></textarea>
+<br />
+<input id="msg" type="text" />
+<br />
+<button id="send">send</button>
+
+<script>
+	function createMsg() {
+		return {name: $('#name').val(), message:$('#msg').val()};
+	}
+
+	function appendBoard(data) {
+		$('#board').val($('#board').val() + data.name + ' said: ' + data.message + '\n');
+	}
+
+	var socket = io.connect('http://localhost:8989');
+	socket.on('recv_msg', function (data) {
+		appendBoard(data);
+	});
+
+	$('#login').click(function(){
+		console.log('try login');
+		socket.emit('login', {name: $('#name').val(), room: $('#room').val()}, function(){
+			$('#send').unbind('click').click(function() {
+				var data = createMsg();
+				console.log('send ' + data.message);
+				socket.emit('send_msg', data);
+			});	
+		});	
+	});
+
+</script>
+</body>
+</html>
