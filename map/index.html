@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+<div id="map" style="width:800px;height:600px;background-color:#ccc;margin:auto;overflow:hidden;position:relative;background:#fff url('http://inapcache.boston.com/universal/site_graphics/blogs/bigpicture/ngm125_011113/bp1.jpg') no-repeat 100px 100px;">
+	
+</div>
+
+<script>
+function main() {
+	var clicked = false;
+	$('#map').mousedown(function(e){
+		console.log('mousedown');
+		$this = $(this);
+		var x = e.pageX, y = e.pageY;
+		$this.mousemove(function(e){
+			console.log('mousemove');
+			var px = parseInt($this.css('background-position-x')) + (e.pageX - x) + 'px',
+				py = parseInt($this.css('background-position-y')) + (e.pageY - y) + 'px';
+			console.log(px + ' ' + py);
+			$this.css('background-position', px + ' ' + py);
+			x = e.pageX, y = e.pageY;
+		}).mouseup(function(e){
+			console.log('mouseup');
+			$this.unbind('mousemove').unbind('mouseup');
+		});
+	});
+
+
+}
+
+$(function(){
+	main();
+});
+
+</script>
+</body>
+</html>
