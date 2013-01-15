@@ -33,24 +33,24 @@ body{
 function main() {
 	var clicked = false, $map = $('#map'), socket;
 
-	socket = io.connect('http://localhost:8989');
-	socket.on('connect', function(){
-		socket.emit('update_pos', {x:parseInt($map.css('left')), y:parseInt($map.css('top'))});
+	socket = io.connect('http://' + location.host);
+	socket.on('connect', function(){	
+		updatePosition();
 	});
 
 	$map.mousedown(function(e){
 		console.log('mousedown');
 		var x = e.pageX, y = e.pageY;
 		function unbind(){$map.unbind('mousemove').unbind('mouseup').unbind('mouseleave')}
-		$map.mousemove(function(e){
-			console.log('mousemove');
+		$map.mousemove(function(e){			
 			var px = parseInt($map.css('left')) + (e.pageX - x) + 'px',
 				py = parseInt($map.css('top')) + (e.pageY - y) + 'px';
-			console.log(px + ' ' + py);
+			console.log('mousemove: ' + px + ' ' + py);
 			$map.css('left', px).css('top', py);
 			x = e.pageX, y = e.pageY;
-
-			socket.emit('update_pos', {x:x, y:y});
+			
+			updateMsg();
+			updatePosition();
 		}).mouseup(function(e){
 			console.log('mouseup');
 			unbind();
@@ -70,9 +70,51 @@ function main() {
 	});
 
 	socket.on('recv_msg', function (data) {
+		createMsg(data);
+	});
+	
+	socket.on('remove_msg', function (data) {
+		console.log('remove_msg: ' + JSON.stringify(data));
+		$('#'+data.id).remove();
+	});
+	
+	function isPointInArea(point, pos) {
+		return point.x >= pos.start.x && point.x <= pos.end.x && point.y >= pos.start.y && point.y <= pos.end.y;
+	}	
+	
+	function getPosition() {
+		var px = parseInt($map.css('left')), py =  parseInt($map.css('top'));
+		return {start:{x:px, y:py}, end:{x:px+256, y:py+256}};
+	}
+	
+	function updatePosition() {
+		var pos = getPosition();
+		console.log('update position: ' + JSON.stringify(pos));
+		socket.emit('update_pos', pos, function(msg_lst){
+			for(var i=0;i<msg_lst.length;i++){
+				createMsg(msg_lst[i]);
+			}
+		});
+	}
+	
+	function createMsg(data) {
+		if($('#'+data.id).size()>0)
+			return;
+		
+		console.log('creating msg: ' + JSON.stringify(data));
 		var msg = $('<span id='+data.id+' class="msg">'+data.message+'</span>').css('left', data.x+'px').css('top', data.y+'px');
 		$('body').append(msg);
-	});
+	}
+	
+	function updateMsg() {
+		$('.msg').each(function() {
+			var $this = $(this), p = $this.position();
+			
+			if(!isPointInArea({x:p.left, y:p.top}, getPosition())) {
+				$this.remove();
+			}
+		});
+	}
 }
 
 $(function(){
