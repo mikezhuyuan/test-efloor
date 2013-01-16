@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+    <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+</head>
+<body>    
+    <script>        
+        var sockjs = new SockJS('/endpoint'), remote, handlers = {};
+        
+        sockjs.onopen    = function()  {
+          console.log('connected');
+
+          sockjs.onmessage = function(e) {
+            console.log('onmessage: ' + e);
+            dispatch(JSON.parse(e.data));
+          };
+        };
+
+        sockjs.onclose   = function()  {
+          console.log('disconnected');
+        };
+
+        function dispatch(data) {
+          var h;
+          (h = handlers[data.method]) && h.apply(null, data.args);          
+        }
+
+        remote = {
+          call : function(name) {
+            var args = Array.prototype.slice.call(arguments, 1);
+            sockjs.send(JSON.stringify({method:name, args:args}));
+          },
+
+          register : function(name, handler) {
+            handlers[name] = handler;
+          }   
+        };
+
+        remote.register('showAccount', function(name){
+          console.log('showAccount: ' + name);          
+        });
+    </script>
+</body>
+</html>
