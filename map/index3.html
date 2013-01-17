@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+<div id="container" style="width:800px;height:600px;overflow:hidden;position:relative;margin:auto">
+	<div id="map" style="width:1000px;height:1000px;background-color:#ccc;margin:auto;overflow:hidden;position:absolute;background:#fff url('http://inapcache.boston.com/universal/site_graphics/blogs/bigpicture/ngm125_011113/bp1.jpg') no-repeat 100px 100px;">
+		
+	</div>
+</div>
+<script>
+function main() {
+	var $map = $('#map');
+	$map.mousedown(function(e){
+		console.log('mousedown');		
+		var x1 = e.pageX, y1 = e.pageY, pos1 = $map.offset();
+		$map.mousemove(function(e){
+			console.log('mousemove');
+
+			var dx = e.pageX - x1,
+				dy = e.pageY - y1;
+			console.log(dx + ' ' + dy);			
+			$map.offset({left:pos1.left+ dx, top:pos1.top+dy});		
+		}).mouseup(function(e){
+			console.log('mouseup');
+			$map.unbind('mousemove').unbind('mouseup');
+		});
+	});
+}
+
+$(function(){
+	main();
+});
+
+</script>
+</body>
+</html>

@@ -12,24 +12,23 @@
 
 <script>
 function main() {
-	$('#map').mousedown(function(e){
-		console.log('mousedown');
-		$this = $(this);
-		var x = e.pageX, y = e.pageY;
-		$this.mousemove(function(e){
+	var clicked = false;
+	var $map = $('#map');
+	$map.mousedown(function(e){
+		console.log('mousedown');		
+		var x1 = e.pageX, y1 = e.pageY, px1 = parseInt($map.css('background-position-x')), py1 = parseInt($map.css('background-position-y'));
+		$map.mousemove(function(e){
 			console.log('mousemove');
-			var px = parseInt($this.css('background-position-x')) + (e.pageX - x) + 'px',
-				py = parseInt($this.css('background-position-y')) + (e.pageY - y) + 'px';
-			console.log(px + ' ' + py);
-			$this.css('background-position', px + ' ' + py);
-			x = e.pageX, y = e.pageY;
+
+			var px = e.pageX - x1,
+				py = e.pageY - y1;
+			console.log(px + ' ' + py);			
+			$map.css('background-position', (px1 + px) + 'px ' + (py1 + py) + 'px');		
 		}).mouseup(function(e){
 			console.log('mouseup');
-			$this.unbind('mousemove').unbind('mouseup');
+			$map.unbind('mousemove').unbind('mouseup');
 		});
 	});
-
-
 }
 
 $(function(){
