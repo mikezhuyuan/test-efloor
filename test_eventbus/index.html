@@ -1,0 +1,86 @@
+<script>
+var root = {};
+
+function split_ns(ns) {
+	return ns.split(/\./);
+}
+
+function add(node, arr, index, value) {
+	if(index >= arr.length) {
+		node._value = value;
+		return;
+	}
+
+	var name = arr[index], next = node[name];
+	if(!next) {
+		node[name] = next = {};	
+	}
+	
+	add(next, arr, index + 1, value);
+}
+
+function collect(node, arr, index, result) {
+	var name = arr[index], next;
+
+	if(name == '*') {
+		collectAll(node, result);
+		return;
+	}
+
+	next = node[name];
+	if(!next)
+		return;
+
+	if(index == arr.length - 1) {
+		next._value && result.push(next._value);
+		return;
+	}
+
+	collect(next, arr, index + 1, result);
+}
+
+function collectAll(node, result) {
+	node._value && result.push(node._value);
+	for(var p in node) {
+		collectAll(node[p], result);
+	}
+}
+
+bus = {
+	on : function(event, callback, context) {
+		add(root, split_ns(event), 0, [callback, (context || this)]);
+	},
+
+	emit : function(event) {
+		var result = [];
+		collect(root, split_ns(event), 0, result);
+
+		if(!result.length)
+			return;
+
+		var args = Array.prototype.slice.call(arguments, 1);
+		for(var i=0; i<result.length; i++){
+			result[i][0].apply(result[i][1], args);
+		}
+	}
+}
+
+bus.on('java', function(id){
+	console.log('java: ' + id);
+});
+
+bus.on('java.io', function(id){
+	console.log('java.io: ' + id);
+});
+
+bus.on('java.net', function(id){
+	console.log('java.net: ' + id);
+});
+
+bus.emit('ruby', -1);
+bus.emit('ruby.*', -2);
+bus.emit('java', 1);
+bus.emit('java.net', 2);
+bus.emit('java.*', 3);
+
+</script>
