@@ -1,23 +1,23 @@
 <!doctype html>
 <html>
 <head>
-    <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+    <script src="https://raw.github.com/LearnBoost/engine.io/master/examples/latency/public/engine.io-dev.js"></script>
 </head>
 <body>    
     <script>        
-        var sockjs = new SockJS('/endpoint'), remote, handlers = {}, start;
+        var socket = new eio.Socket(), remote, handlers = {}, start;
         
-        sockjs.onopen    = function()  {
+        socket.onopen    = function()  {
           console.log('connected');
 
-          sockjs.onmessage = function(e) {
+          socket.onmessage = function(e) {
             console.log('onmessage: ' + e);
             console.log('duration: ' + (new Date() - start));
             dispatch(JSON.parse(e.data));
           };
         };
 
-        sockjs.onclose   = function()  {
+        socket.onclose   = function()  {
           console.log('disconnected');
         };
 
@@ -30,7 +30,7 @@
           call : function(name) {
             start = new Date();
             var args = Array.prototype.slice.call(arguments, 1);
-            sockjs.send(JSON.stringify({method:name, args:args}));
+            socket.send(JSON.stringify({method:name, args:args}));
           },
 
           register : function(name, handler) {
