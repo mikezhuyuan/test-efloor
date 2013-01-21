@@ -2,7 +2,7 @@
 var root = {};
 
 function split_ns(ns) {
-	return ns.split(/\./);
+	return ns.split('.');
 }
 
 function add(node, arr, index, value) {
@@ -20,11 +20,16 @@ function add(node, arr, index, value) {
 }
 
 function collect(node, arr, index, result) {
-	var name = arr[index], next;
+	var name = arr[index], next, wildcard;
 
 	if(name == '*') {
-		collectAll(node, result);
+		collectAll(node, result, true);
 		return;
+	}
+
+	wildcard = node['*'];
+	if(wildcard && wildcard._value) {
+		result.push(wildcard._value);
 	}
 
 	next = node[name];
@@ -39,8 +44,8 @@ function collect(node, arr, index, result) {
 	collect(next, arr, index + 1, result);
 }
 
-function collectAll(node, result) {
-	node._value && result.push(node._value);
+function collectAll(node, result, noRoot) {
+	!noRoot && node._value && result.push(node._value);
 	for(var p in node) {
 		collectAll(node[p], result);
 	}
@@ -65,6 +70,7 @@ bus = {
 	}
 }
 
+
 bus.on('java', function(id){
 	console.log('java: ' + id);
 });
@@ -75,6 +81,10 @@ bus.on('java.io', function(id){
 
 bus.on('java.net', function(id){
 	console.log('java.net: ' + id);
+});
+
+bus.on('java.*', function(id){
+	console.log('java.*: ' + id);
 });
 
 bus.emit('ruby', -1);
