@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+<style>
+#container{
+	border:4px #fff solid;
+	width:800px;
+	height:600px;
+	overflow:hidden;
+	position:relative;
+	margin:auto
+}
+
+#dragContainer{
+	position: absolute; 
+	left: 0px; 
+	top: 0px; 
+	z-index: 0; 
+	-webkit-transform: translate(0px, 0px) scale(1);
+	width:0;
+	height:0;
+}
+
+.grid{
+	width:128px;
+	height:128px;
+	position: absolute;
+	background-color:blue;
+	border:1px #ccc solid;
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+	<div id="dragContainer">
+
+	</div>
+</div>
+
+<script>
+var width = 800, height = 600, gridSize = 128;
+
+function main() {	
+	for(var i=0; i<width; i+=gridSize) {
+		for(var j=0; j<height; j+=gridSize) {
+			$('#dragContainer').append('<div class="grid" style="left:' + i + "px; top:" + j + 'px">');
+		}
+	}
+
+	var $container = $('#container'), ox = 0, oy = 0, dx, dy;
+	$container.mousedown(function(e){
+		console.log('mousedown');		
+		var x1 = e.pageX, y1 = e.pageY;
+		$container.mousemove(function(e){
+			console.log('mousemove');
+			dx = (e.pageX - x1);
+			dy = (e.pageY - y1);
+			$('#dragContainer').css('-webkit-transform', 'translate(' + (ox + dx) + 'px, ' + (oy + dy) + 'px)');		
+		}).mouseup(function(e){
+			console.log('mouseup');
+			ox += dx, oy += dy;
+			$container.unbind('mousemove').unbind('mouseup');
+		});
+	});
+}
+
+$(function(){
+	main();
+});
+
+</script>
+</body>
+</html>
