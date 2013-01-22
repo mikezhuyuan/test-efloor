@@ -4,9 +4,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
 <style>
 #container{
-	border:4px #fff solid;
-	width:800px;
-	height:600px;
+	border:4px #ccc solid;
 	overflow:hidden;
 	position:relative;
 	margin:auto
@@ -41,12 +39,24 @@
 </div>
 
 <script>
-var width = 800, height = 600, gridSize = 128;
+width = 128 * 4, 
+height = 128 * 4, 
+gridSize = 128, 
+arrayX = [], 
+arrayY = [],
+array = [];
 
-function main() {	
-	for(var i=0; i<width; i+=gridSize) {
-		for(var j=0; j<height; j+=gridSize) {
-			$('#dragContainer').append('<div class="grid" style="left:' + i + "px; top:" + j + 'px">');
+function main() {
+	$('#container').css('width', width).css('height', height);
+
+	for(var i=0; i<width+gridSize; i+=gridSize) {
+		arrayX.push(i);
+		array.push([]);
+		for(var j=0; j<height+gridSize; j+=gridSize) {
+			var grid = $('<div class="grid" style="left:' + i + "px; top:" + j + 'px">');
+			array[i/gridSize].push(grid);
+			$('#dragContainer').append(grid);
+			arrayY.push(j);
 		}
 	}
 
@@ -58,13 +68,77 @@ function main() {
 			console.log('mousemove');
 			dx = (e.pageX - x1);
 			dy = (e.pageY - y1);
+			move(-(ox + dx), -(oy + dy));
 			$('#dragContainer').css('-webkit-transform', 'translate(' + (ox + dx) + 'px, ' + (oy + dy) + 'px)');		
 		}).mouseup(function(e){
 			console.log('mouseup');
 			ox += dx, oy += dy;
+			
 			$container.unbind('mousemove').unbind('mouseup');
 		});
 	});
+}
+
+function move(x, y) {
+	if(_move(arrayX, x, gridSize, width)){
+		for(var i=0;i<array.length;i++){
+			for(var j=0;j<array[i].length;j++){
+				array[i][j].css({left:arrayX[j]});
+			}
+		}
+	}
+
+	if(_move(arrayY, y, gridSize, height)){
+		for(var i=0;i<array.length;i++){
+			for(var j=0;j<array[i].length;j++){
+				array[i][j].css({top:arrayY[i]});				
+			}
+		}
+	}
+}
+
+function _move(array, offset, size, frame){
+	var updated = false;
+
+	if(offset < array[0]) {		
+		shift(array, -1);	
+		array[0] = array[1] - size;	
+		updated = true;
+	}
+
+	if(offset + frame > array[array.length- 1] + size) {
+		shift(array, 1);
+		array[array.length-1] = array[array.length-2] + size;
+		updated = true;
+	}
+
+	return updated;
+}
+
+function shift(array, size) {
+	var len = array.length;
+	if(size < 0) {
+		size = len + size;
+	}
+	size = size % len;
+
+	if(!size)
+		return;
+
+	reverse(array, 0, size -1);
+	reverse(array, size, len-1);
+	reverse(array, 0, len-1);
+}
+
+function reverse(array, start, end) {
+	var tmp;
+	while(start < end) {
+		tmp = array[start];
+		array[start] = array[end];
+		array[end] = tmp;
+		start++;
+		end--;
+	}
 }
 
 $(function(){
@@ -72,5 +146,6 @@ $(function(){
 });
 
 </script>
+
 </body>
 </html>
