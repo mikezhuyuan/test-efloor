@@ -49,12 +49,12 @@ array = [];
 function main() {
 	$('#container').css('width', width).css('height', height);
 
-	for(var i=0; i<height+gridSize; i+=gridSize) {
+	for(var i=(-gridSize); i<height+gridSize; i+=gridSize) {
 		arrayX.push(i);
 		array.push([]);
-		for(var j=0; j<width+gridSize; j+=gridSize) {
+		for(var j=(-gridSize); j<width+gridSize; j+=gridSize) {
 			var grid = $('<div class="grid" style="top:' + i + "px; left:" + j + 'px">');
-			array[i/gridSize].push(grid);
+			array[(i+gridSize)/gridSize].push(grid);
 			$('#dragContainer').append(grid);
 			if(i == 0) {
 				arrayY.push(j);
