@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+<style type="text/css">
+#sprite{
+	position: absolute;
+	width: 0px;
+	height: 32px;
+	background-color: red;	
+	left:0;
+	top:0;
+	/*-webkit-animation-name: move;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-timing-function: steps(10);	
+	-webkit-animation-iteration-count: infinite;*/
+	-webkit-animation: move 1s steps(100) infinite;	
+}
+
+@-webkit-keyframes move {
+	0% {
+		width: 0px;
+	}
+
+	100% {
+		width: 32px;
+	}
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="sprite">
+	
+</div>
+
+<script>
+
+</script>
+</body>
+</html>

@@ -4,18 +4,91 @@
 <style type="text/css">
 #sprite{
 	position: absolute;
-	width: 50px;
-	height: 50px;
-	background-color: red;
+	width: 32px;
+	height: 32px;
+	background: #fff url(player.png) no-repeat top left ;
 	left:0;
 	top:0;
 }
+
+#sprite.up {
+	background-position: -32px -96px;
+}
+
+#sprite.down {
+	background-position: -32px 0px;	
+}
+
+#sprite.left {
+	background-position: -32px -32px;	
+}
+
+#sprite.right {
+	background-position: -32px -64px;	
+}
+
+@-webkit-keyframes down {
+	0% {
+		background-position: 0 0;
+	}
+	
+	50% {
+		background-position:-64px 0;
+	}
+
+	100% {
+		background-position: 0 0;
+	}
+}
+
+@-webkit-keyframes left {
+	0% {
+		background-position: 0 -32px;
+	}
+	
+	50% {
+		background-position:-64px -32px;
+	}
+
+	100% {
+		background-position: 0 -32px;
+	}
+}
+
+@-webkit-keyframes right {
+	0% {
+		background-position: 0 -64px;
+	}
+	
+	50% {
+		background-position:-64px -64px;
+	}
+
+	100% {
+		background-position: 0 -64px;
+	}
+}
+
+@-webkit-keyframes up {
+	0% {
+		background-position: 0 -96px;
+	}
+	
+	50% {
+		background-position:-64px -96px;
+	}
+
+	100% {
+		background-position: 0 -96px;
+	}
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="sprite">
+<div id="sprite" class="down">
 	
 </div>
 
@@ -28,16 +101,21 @@ moving,
 keys = [null, null, null, null],
 start = Date.now(),
 keyCount = 1,
+orientation = ['left','top','right','up']
 loop = function(time) {
 	var delta = time - start
 	if(moving === 37) {
 		sprite.style.left = (x -= delta * speed) + 'px'
+		sprite.style.webkitAnimation = 'left .8s steps(2) infinite'
 	} else if(moving === 38) {
 		sprite.style.top = (y -= delta * speed) + 'px'
+		sprite.style.webkitAnimation = 'up .8s steps(2) infinite'
 	} else if(moving === 39) {
 		sprite.style.left = (x += delta * speed) + 'px'
+		sprite.style.webkitAnimation = 'right .8s steps(2) infinite'
 	} else if(moving === 40) {
 		sprite.style.top = (y += delta * speed) + 'px'
+		sprite.style.webkitAnimation = 'down .8s steps(2) infinite'
 	}
 
 	start = time
@@ -72,6 +150,8 @@ document.onkeyup = function(k){
 		} else {
 			keyCount = 1
 			moving = false
+			sprite.style.webkitAnimation = ''
+			sprite.className = orientation[c - 37]
 		}
 	}
 }

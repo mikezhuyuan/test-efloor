@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+<style type="text/css">
+#sprite{
+	position: absolute;
+	width: 50px;
+	height: 50px;
+	background-color: red;
+	left:0;
+	top:0;
+}
+</style>
+</head>
+
+<body>
+
+<div id="sprite">
+	
+</div>
+
+<script>
+var requestAnimationFrame = webkitRequestAnimationFrame,
+sprite = document.getElementById('sprite'),
+x = 0, y = 0,
+speed=2
+
+document.onkeydown = function(k){
+	var c = k.keyCode
+	if(c >= 37 && c <= 40) {
+		if(c === 37) {
+			sprite.style.left = (x -= speed) + 'px'
+		} else if(c === 38) {
+			sprite.style.top = (y -= speed) + 'px'
+		} else if(c === 39) {
+			sprite.style.left = (x += speed) + 'px'
+		} else if(c === 40) {
+			sprite.style.top = (y += speed) + 'px'
+		}
+	}
+}
+</script>
+</body>
+</html>
