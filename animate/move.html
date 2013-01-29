@@ -101,7 +101,7 @@ moving,
 keys = [null, null, null, null],
 start = Date.now(),
 keyCount = 1,
-orientation = ['left','top','right','up']
+orientation = ['left','top','right','up'],
 loop = function(time) {
 	var delta = time - start
 	if(moving === 37) {
@@ -119,14 +119,19 @@ loop = function(time) {
 	}
 
 	start = time
-	requestAnimationFrame(loop)
+	if(moving)
+		requestAnimationFrame(loop)
 }
 
-requestAnimationFrame(loop)
+
 
 document.onkeydown = function(k){
 	var c = k.keyCode
 	if(c >= 37 && c <= 40) {
+		if(!moving){
+			start = Date.now()
+			requestAnimationFrame(loop)
+		}
 		keys[c - 37] = keyCount++
 		moving = c
 	}
