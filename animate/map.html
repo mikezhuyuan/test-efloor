@@ -1,0 +1,337 @@
+<!doctype html>
+<html>
+<head>
+<script src="http://code.jquery.com/jquery.min.js" type="text/javascript"></script>
+<style>
+#container{
+	border:4px #ccc solid;
+	overflow:hidden;
+	position:relative;
+	margin:auto
+}
+
+#dragContainer{
+	position: absolute; 
+	left: 0px; 
+	top: 0px; 
+	z-index: 0; 
+	-webkit-transform: translate(0px, 0px) scale(1);
+	width:0;
+	height:0;
+}
+
+.grid{
+	width:128px;
+	height:128px;
+	position: absolute;
+	background-color:blue;
+	border:1px #ccc solid;
+}
+
+#sprite{
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	background: #fff url(player.png) no-repeat top left ;
+	left:50%;
+	top:50%;
+	margin-left:-16px;
+	margin-top:-16px;
+}
+
+#sprite.up {
+	background-position: -32px -96px;
+}
+
+#sprite.down {
+	background-position: -32px 0px;	
+}
+
+#sprite.left {
+	background-position: -32px -32px;	
+}
+
+#sprite.right {
+	background-position: -32px -64px;	
+}
+
+@-webkit-keyframes down {
+	0% {
+		background-position: 0 0;
+	}
+	
+	50% {
+		background-position:-64px 0;
+	}
+
+	100% {
+		background-position: 0 0;
+	}
+}
+
+@-webkit-keyframes left {
+	0% {
+		background-position: 0 -32px;
+	}
+	
+	50% {
+		background-position:-64px -32px;
+	}
+
+	100% {
+		background-position: 0 -32px;
+	}
+}
+
+@-webkit-keyframes right {
+	0% {
+		background-position: 0 -64px;
+	}
+	
+	50% {
+		background-position:-64px -64px;
+	}
+
+	100% {
+		background-position: 0 -64px;
+	}
+}
+
+@-webkit-keyframes up {
+	0% {
+		background-position: 0 -96px;
+	}
+	
+	50% {
+		background-position:-64px -96px;
+	}
+
+	100% {
+		background-position: 0 -96px;
+	}
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="container">
+	<div id="dragContainer">
+
+	</div>
+
+	<div id="sprite" class="down">
+	
+	</div>
+</div>
+
+<script>
+var sprite = document.getElementById('sprite'),
+	width = 128 * 4, 
+	height = 128 * 4, 
+	gridSize = 128, 
+	arrayX = [], 
+	arrayY = [],
+	array = [],
+	requestAnimationFrame = webkitRequestAnimationFrame,
+	x = 0, y = 0,
+	speed = 0.12,
+	moving,
+	keys = [null, null, null, null],
+	start = Date.now(),
+	keyCount = 1,
+	orientation = ['left','up','right','down'],
+	dragContainer = document.getElementById('dragContainer'),
+loop = function(time) {
+	var delta = time - start
+
+	if(moving >= 37 && moving <= 40) {
+		if(moving === 37) {
+			x -= delta * speed
+		} else if(moving === 38) {
+			y -= delta * speed
+		} else if(moving === 39) {
+			x += delta * speed
+		} else {
+			y += delta * speed
+		}
+
+		move(x,y)		
+		dragContainer.style.webkitTransform = 'translate(' + -x + 'px, ' + -y + 'px)'	
+	}
+
+	start = time
+	if(moving)
+		requestAnimationFrame(loop)
+}
+
+document.onkeydown = function(k){
+	var c = k.keyCode
+	if(c >= 37 && c <= 40) {
+		if(!moving){
+			start = Date.now()
+			requestAnimationFrame(loop)
+		}
+		keys[c - 37] = keyCount++
+		
+		if(moving != c) {
+			spriteMove(c)
+		}
+
+		moving = c
+	}
+}
+
+document.onkeyup = function(k){
+	var c = k.keyCode
+
+	if(c >= 37 && c <= 40) {
+		keys[c - 37] = null
+
+		var maxKey = Math.max.apply(null,keys)		
+		if(keys[0] === maxKey) {
+			moving = 37
+		} else if (keys[1] === maxKey) {
+			moving = 38
+		} else if (keys[2] === maxKey) {
+			moving = 39
+		} else if (keys[3] === maxKey) {
+			moving = 40
+		} else {
+			keyCount = 1
+			moving = false
+			sprite.style.webkitAnimation = ''
+			sprite.className = orientation[c - 37]
+		}
+
+		spriteMove(moving)
+	}
+}
+
+function spriteMove(c) {
+	if(c === 37) {
+		sprite.style.webkitAnimation = 'left .8s steps(2) infinite'		
+	} else if(c === 38) {
+		sprite.style.webkitAnimation = 'up .8s steps(2) infinite'
+	} else if(c === 39) {
+		sprite.style.webkitAnimation = 'right .8s steps(2) infinite'
+	} else if(c === 40) {
+		sprite.style.webkitAnimation = 'down .8s steps(2) infinite'
+	}
+}
+
+function main() {
+	$('#container').css('width', width).css('height', height);
+
+	for(var i=(-gridSize); i<height+gridSize; i+=gridSize) {
+		arrayX.push(i);
+		array.push([]);
+		for(var j=(-gridSize); j<width+gridSize; j+=gridSize) {
+			var grid = $('<div class="grid" style="top:' + i + "px; left:" + j + 'px">');
+			array[(i+gridSize)/gridSize].push(grid);
+			$('#dragContainer').append(grid);
+			if(i == 0) {
+				arrayY.push(j);
+			}
+		}
+	}
+}
+
+function move(x, y) {
+	var r;
+	if(r = _move(arrayX, x, gridSize, width)){
+		if(r < 0) {
+			for(var i=0;i<array.length;i++){
+				array[i][arrayX.length-1].css({left:arrayX[0]});
+				shift(array[i], r);
+			}
+		} else {
+			for(var i=0;i<array.length;i++){
+				array[i][0].css({left:arrayX[arrayX.length-1]});
+				shift(array[i], r);
+			}
+		}		
+	}
+
+	if(r = _move(arrayY, y, gridSize, height)){
+		console.log	(r)
+		if(r < 0) {
+			for(var i=0;i<arrayY.length;i++){
+				array[arrayY.length-1][i].css({top:arrayY[0]});
+			}
+		} else {
+			for(var i=0;i<arrayY.length;i++){
+				array[0][i].css({top:arrayY[arrayY.length-1]});
+			}
+		}
+		shift(array, r);
+	}
+}
+
+function _move(array, offset, size, frame){
+	var updated = 0;
+
+	if(offset < array[0]) {		
+		shift(array, -1);	
+		array[0] = array[1] - size;	
+		updated = -1;
+	}
+
+	if(offset + frame > array[array.length- 1] + size) {
+		shift(array, 1);
+		array[array.length-1] = array[array.length-2] + size;
+		updated = 1;
+	}
+
+	return updated;
+}
+
+function shift(array, size) {
+	var len = array.length, t;
+	if(size < 0) {
+		size = len + size;
+	}
+	size = size % len;
+
+	if(!size)
+		return;
+
+	if(size == -1){
+		t = array[array.length - 1];
+		for(var i=array.length-1; i>1; i--){
+			array[i] = array[i-1];
+		}
+		array[0] = t;
+	} else if(size == 1) {
+		t = array[0];
+		for(var i=0; i<array.length - 1; i++){
+			array[i] = array[i+1];
+		}
+		array[array.length - 1] = t;
+	} else {
+		reverse(array, 0, size -1);
+		reverse(array, size, len-1);
+		reverse(array, 0, len-1);
+	}
+}
+
+function reverse(array, start, end) {
+	var tmp;
+	while(start < end) {
+		tmp = array[start];
+		array[start] = array[end];
+		array[end] = tmp;
+		start++;
+		end--;
+	}
+}
+
+$(function(){
+	main();
+});
+
+</script>
+
+</body>
+</html>
