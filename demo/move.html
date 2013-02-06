@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+<head>
+<style type="text/css">
+#container div{
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	background: #fff url(player.png) no-repeat top left ;	
+}
+
+#container div.up {
+	background-position: -32px -96px;
+}
+
+#container div.down {
+	background-position: -32px 0px;	
+}
+
+#container div.left {
+	background-position: -32px -32px;	
+}
+
+#container div.right {
+	background-position: -32px -64px;	
+}
+
+@-webkit-keyframes down {
+	0% {
+		background-position: 0 0;
+	}
+	
+	50% {
+		background-position:-64px 0;
+	}
+
+	100% {
+		background-position: 0 0;
+	}
+}
+
+@-webkit-keyframes left {
+	0% {
+		background-position: 0 -32px;
+	}
+	
+	50% {
+		background-position:-64px -32px;
+	}
+
+	100% {
+		background-position: 0 -32px;
+	}
+}
+
+@-webkit-keyframes right {
+	0% {
+		background-position: 0 -64px;
+	}
+	
+	50% {
+		background-position:-64px -64px;
+	}
+
+	100% {
+		background-position: 0 -64px;
+	}
+}
+
+@-webkit-keyframes up {
+	0% {
+		background-position: 0 -96px;
+	}
+	
+	50% {
+		background-position:-64px -96px;
+	}
+
+	100% {
+		background-position: 0 -96px;
+	}
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="container">
+
+</div>
+
+<script>
+
+var Sprite = (function() {
+	var speed = 0.06, maxInstruct=120
+	var type = function(x, y){
+		var dom = document.createElement('div')
+		this.x = x
+		this.y = y		
+		this.dom = dom
+		this.status = 'stop'
+		this.instructs = []
+		dom.style.left = x + 'px'
+		dom.style.top = y + 'px'
+
+		document.getElementById('container').appendChild(dom)
+	}
+
+	type.prototype = {
+		walk: function(direction, duration) {
+			var d = speed * duration
+			switch(direction){
+				case 'left':
+				this.move(this.x - d, this.y)
+				break;
+				case 'up':
+				this.move(this.x, this.y - d)
+				break;
+				case 'right':
+				this.move(this.x + d, this.y)
+				break;
+				case 'down':
+				this.move(this.x, this.y + d)
+				break;
+			}
+		},
+		stop: function() {
+			this.dom.style.webkitAnimation = ''
+			this.status = 'stop'
+		},
+		move: function(x,y) {
+			var d			
+			if(x < this.x) {
+				d = 'left'
+			} else if(y < this.y) {			
+				d = 'up'
+			} else if(x > this.x ) {		
+				d = 'right'	
+			} else if(y > this.y) {
+				d = 'down'
+			}
+
+			if (d) {
+				if(this.status != d) {
+					this.dom.style.webkitAnimation = d + ' .8s steps(2) infinite'			
+					this.dom.className = this.status = d
+				}
+				
+				this.dom.style.left = (this.x = x) + 'px'
+				this.dom.style.top = (this.y = y) + 'px'
+
+				if(this.instructs.length < maxInstruct)
+					this.instructs.push({x:x, y:y})
+			}
+		},
+		instruct: function(posArray) {
+			if(posArray && posArray.length)
+				this.instructs = this.instructs.concat(posArray)
+
+			if(this.instructs.length > maxInstruct) {
+				this.instructs = this.instructs.slice(0, maxInstruct)
+			}
+		},
+		next: function() {
+			var pos = this.instructs.shift()
+			if(pos) {			
+				this.move(pos.x, pos.y)
+			} else {
+				//this.stop()
+			}
+		},
+		destroy: function() {
+			dom.parentNode.removeChild(dom)
+		}
+	}
+
+	return type;
+})();
+
+var sprite = new Sprite(100,100)
+
+var requestAnimationFrame = webkitRequestAnimationFrame,
+moving,
+keys = [null, null, null, null],
+start = Date.now(),
+keyCount = 1,
+orientation = ['left','up','right','down'],
+loop = function(time) {
+	if(moving && moving >= 37 && moving <= 40) {
+		sprite.walk(orientation[moving - 37], time - start)
+	}
+
+	//sprite.next()
+	start = time
+	requestAnimationFrame(loop)
+}
+
+var instr = []
+for(var i=0;i<10000;i++){
+	instr.push({x:i, y:10})
+}
+
+sprite.instruct(instr)
+
+document.onkeydown = function(k){
+	var c = k.keyCode
+	if(c >= 37 && c <= 40) {		
+		keys[c - 37] = keyCount++
+		moving = c
+	}
+}
+
+document.onkeyup = function(k){
+	var c = k.keyCode
+
+	if(c >= 37 && c <= 40) {
+		keys[c - 37] = null
+
+		var maxKey = Math.max.apply(null,keys)		
+		if(keys[0] === maxKey) {
+			moving = 37
+		} else if (keys[1] === maxKey) {
+			moving = 38
+		} else if (keys[2] === maxKey) {
+			moving = 39
+		} else if (keys[3] === maxKey) {
+			moving = 40
+		} else {
+			keyCount = 1
+			moving = false
+			sprite.stop()
+		}
+	}
+}
+
+loop()
+</script>
+</body>
+</html>
