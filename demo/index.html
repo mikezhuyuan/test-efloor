@@ -1,0 +1,332 @@
+<!doctype html>
+<html>
+<head>
+<script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+<style type="text/css">
+#container div{
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	background: #fff url(player.png) no-repeat top left ;	
+}
+
+#container div.up {
+	background-position: -32px -96px;
+}
+
+#container div.down {
+	background-position: -32px 0px;	
+}
+
+#container div.left {
+	background-position: -32px -32px;	
+}
+
+#container div.right {
+	background-position: -32px -64px;	
+}
+
+@-webkit-keyframes down {
+	0% {
+		background-position: 0 0;
+	}
+	
+	50% {
+		background-position:-64px 0;
+	}
+
+	100% {
+		background-position: 0 0;
+	}
+}
+
+@-webkit-keyframes left {
+	0% {
+		background-position: 0 -32px;
+	}
+	
+	50% {
+		background-position:-64px -32px;
+	}
+
+	100% {
+		background-position: 0 -32px;
+	}
+}
+
+@-webkit-keyframes right {
+	0% {
+		background-position: 0 -64px;
+	}
+	
+	50% {
+		background-position:-64px -64px;
+	}
+
+	100% {
+		background-position: 0 -64px;
+	}
+}
+
+@-webkit-keyframes up {
+	0% {
+		background-position: 0 -96px;
+	}
+	
+	50% {
+		background-position:-64px -96px;
+	}
+
+	100% {
+		background-position: 0 -96px;
+	}
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="container">
+
+</div>
+
+<script>
+var sockjs = new SockJS('/endpoint'), handlers = {};
+var server = {
+  call : function(name) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    sockjs.send(JSON.stringify({method:name, args:args}));
+  }
+}
+
+var client = {
+  register : function(name, handler) {
+    handlers[name] = handler;
+  }   
+};
+
+sockjs.onopen = function()  {
+  console.log('connected');
+
+  sockjs.onmessage = function(e) {
+    console.log('onmessage: ' + e);            
+    dispatch(JSON.parse(e.data));
+  };
+
+  server.call('init', 100, 100);
+};
+
+sockjs.onclose = function()  {
+  console.log('disconnected');
+};
+
+function dispatch(data) {
+  var h;
+  (h = handlers[data.method]) && h.apply(null, data.args);          
+}
+
+var Sprite = (function() {
+	var speed = 0.08, maxInstruct=120
+	var type = function(id, x, y){
+		var dom = document.createElement('div')		
+		this.id = id
+		this.x = x
+		this.y = y		
+		this.dom = dom
+		this.status = 'stop'
+		this.instructs = []
+		dom.style.left = x + 'px'
+		dom.style.top = y + 'px'
+
+		document.getElementById('container').appendChild(dom)
+	}
+
+	type.prototype = {
+		position: function(){
+			return {x:this.x, y:this.y}
+		},
+		walk: function(direction, duration) {
+			var d = speed * duration
+			switch(direction){
+				case 'left':
+				this.move(this.x - d, this.y)
+				break;
+				case 'up':
+				this.move(this.x, this.y - d)
+				break;
+				case 'right':
+				this.move(this.x + d, this.y)
+				break;
+				case 'down':
+				this.move(this.x, this.y + d)
+				break;
+			}
+		},
+		stop: function() {
+			this.dom.style.webkitAnimation = ''
+			this.status = 'stop'
+		},
+		move: function(x,y) {
+			x = Math.round(x)
+			y = Math.round(y)
+			var d			
+			if(x < this.x) {
+				d = 'left'
+			} else if(y < this.y) {			
+				d = 'up'
+			} else if(x > this.x ) {		
+				d = 'right'	
+			} else if(y > this.y) {
+				d = 'down'
+			}
+
+			if (d) {
+				if(this.status != d) {
+					this.dom.style.webkitAnimation = d + ' .8s steps(2) infinite'			
+					this.dom.className = this.status = d
+				}
+				
+				this.dom.style.left = (this.x = x) + 'px'
+				this.dom.style.top = (this.y = y) + 'px'			
+			}
+		},
+		instruct: function(posArray) {
+			if(posArray && posArray.length)
+				Array.prototype.push.apply(this.instructs, posArray)
+
+			if(this.instructs.length > maxInstruct) {
+				this.instructs.splice(0, this.instructs.length - maxInstruct)
+			}
+		},
+		next: function() {
+			var pos = this.instructs.shift()
+			if(pos) {			
+				this.move(pos.x, pos.y)
+			} else {
+				this.stop()
+			}
+		},
+		destroy: function() {
+			this.dom.parentNode.removeChild(this.dom)
+		}
+	}
+
+	return type;
+})()
+
+var instructor = (function(){
+	var maxInstruct=60, instructs = []
+
+	return {
+		add: function(pos) {
+			if(instructs.length >= maxInstruct) {
+				this.execute()
+			}
+			instructs.push(pos)
+		}, 
+		execute: function() {
+			if(instructs.length) {				
+				server.call('instructUser', instructs)
+				instructs = []
+			}
+		}
+	}
+})()
+
+var sprite,
+	users = {},
+	requestAnimationFrame = webkitRequestAnimationFrame,
+	moving,
+	keys = [null, null, null, null],
+	start = Date.now(),
+	keyCount = 1,
+	orientation = ['left','up','right','down'],
+	loop = function(time) {
+		if(moving && moving >= 37 && moving <= 40) {
+			sprite.walk(orientation[moving - 37], time - start)
+			instructor.add(sprite.position())
+		}
+
+		for(var id in users) {
+			users[id].next()
+		}
+
+		start = time
+		requestAnimationFrame(loop)
+	}
+
+function init(id, x, y, userArray){	
+	sprite = new Sprite(id, x, y)
+
+	for(var i=0;i<userArray.length;i++){
+		var u = userArray[i]
+		addUser(u.id, u.x, u.y)
+	}
+
+	document.onkeydown = function(k){
+		var c = k.keyCode
+		if(c >= 37 && c <= 40) {		
+			keys[c - 37] = keyCount++
+			moving = c
+		}
+	}
+
+	document.onkeyup = function(k){
+		var c = k.keyCode
+
+		if(c >= 37 && c <= 40) {
+			keys[c - 37] = null
+
+			var maxKey = Math.max.apply(null,keys)		
+			if(keys[0] === maxKey) {
+				moving = 37
+			} else if (keys[1] === maxKey) {
+				moving = 38
+			} else if (keys[2] === maxKey) {
+				moving = 39
+			} else if (keys[3] === maxKey) {
+				moving = 40
+			} else {
+				keyCount = 1
+				moving = false
+				sprite.stop()
+				instructor.execute()
+			}
+		}
+	}
+
+	loop()
+}
+function addUser(id, x, y) {
+	var s = new Sprite(id, x, y)
+	users[id] = s
+}
+
+function deleteUser(id){
+	var u = users[id]
+	if(u) {
+		u.destroy()
+		delete users[id]
+	}
+}
+
+function instructUser(id, instructs) {
+	var u = users[id]
+	if(u) {
+		u.instruct(instructs)
+	}
+}
+
+client.register('addUser', addUser);
+
+client.register('deleteUser', deleteUser);
+
+client.register('instructUser', instructUser);
+
+client.register('init', init); 
+
+server.call('init')
+</script>
+</body>
+</html>

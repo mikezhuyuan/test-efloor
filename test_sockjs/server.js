@@ -4,6 +4,7 @@ var http    = require('http');
 var handlers = {};
 var sockjs_echo = sockjs.createServer();
 sockjs_echo.on('connection', function(conn) {
+	console.log(conn)
 	console.log('connected');
     conn.on('data', function(msg) {
         console.log('data: ' + msg);
