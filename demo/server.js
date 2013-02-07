@@ -48,6 +48,9 @@ var User = (function(){
 		},
 		instructUser: function(id, instructs){
 			client.call(this.conn, 'instructUser', id, instructs)
+		},
+		userSpeak: function(id, txt) {
+			client.call(this.conn, 'userSpeak', id, txt)
 		}
 	}
 
@@ -111,6 +114,14 @@ server.register('instructUser', function(conn, instructs){
 
 	broadcast(id, function(user){
 		user.instructUser(id, instructs)
+	})
+})
+
+server.register('userSpeak', function(conn, txt){
+	var id = conn.id
+	
+	broadcast(id, function(user){
+		user.userSpeak(id, txt)
 	})
 })
 

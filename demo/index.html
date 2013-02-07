@@ -3,27 +3,36 @@
 <head>
 <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
 <style type="text/css">
-#container div{
+#container>div{
 	position: absolute;
 	width: 32px;
 	height: 32px;
 	background: #fff url(player.png) no-repeat top left ;	
 }
 
-#container div.up {
+#container>div.up {
 	background-position: -32px -96px;
 }
 
-#container div.down {
+#container>div.down {
 	background-position: -32px 0px;	
 }
 
-#container div.left {
+#container>div.left {
 	background-position: -32px -32px;	
 }
 
-#container div.right {
+#container>div.right {
 	background-position: -32px -64px;	
+}
+
+#container .dialog{
+	position:absolute;
+	border:2px solid #ccc;
+	width:64px;
+	overflow-x:hidden;
+	left:-16px;
+	font-size:12px;
 }
 
 @-webkit-keyframes down {
@@ -91,6 +100,10 @@
 
 </div>
 
+<div>
+	<input id="dialog" />
+	<button id="send">send</button>
+</div>
 <script>
 var sockjs = new SockJS('/endpoint'), handlers = {};
 var server = {
@@ -207,8 +220,21 @@ var Sprite = (function() {
 				this.stop()
 			}
 		},
+		speak: function(txt) {
+			if(this.dialog)
+				this.dialog.parentNode.removeChild(this.dialog)
+
+			var dialog = document.createElement('div')
+			dialog.className = 'dialog'	
+			dialog.innerText = txt
+			this.dom.appendChild(dialog)
+			dialog.style.top = -(parseInt(getComputedStyle(dialog).height)+ 12) + 'px'
+			this.dialog = dialog
+		},
 		destroy: function() {
 			this.dom.parentNode.removeChild(this.dom)
+			if(this.dialog)
+				this.dialog.parentNode.removeChild(this.dialog)
 		}
 	}
 
@@ -296,6 +322,12 @@ function init(id, x, y, userArray){
 		}
 	}
 
+	document.getElementById('send').onclick = function(){
+		var txt = document.getElementById('dialog').value
+		sprite.speak(txt)
+		server.call('userSpeak', txt)
+	}
+
 	loop()
 }
 function addUser(id, x, y) {
@@ -318,11 +350,20 @@ function instructUser(id, instructs) {
 	}
 }
 
+function userSpeak(id, txt) {
+	var u = users[id]
+	if(u) {
+		u.speak(txt)
+	}
+}
+
 client.register('addUser', addUser);
 
 client.register('deleteUser', deleteUser);
 
 client.register('instructUser', instructUser);
+
+client.register('userSpeak', userSpeak); 
 
 client.register('init', init); 
 

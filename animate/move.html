@@ -7,8 +7,8 @@
 	width: 32px;
 	height: 32px;
 	background: #fff url(player.png) no-repeat top left ;
-	left:0;
-	top:0;
+	left:200px;
+	top:200px;
 }
 
 #sprite.up {
@@ -83,6 +83,14 @@
 	}
 }
 
+.dialog{
+	position:absolute;
+	border:2px solid #ccc;
+	width:64px;
+	overflow-x:hidden;
+	left:-16px;
+	font-size:12px;
+}
 </style>
 </head>
 
@@ -161,7 +169,14 @@ document.onkeyup = function(k){
 	}
 }
 
-//setInterval(function(){console.log(keys)}, 16)
+function speak(txt){
+	var dialog = document.createElement('div')//document.getElementById('dialog')
+	dialog.className = 'dialog'	
+	dialog.innerText = txt
+	document.getElementById('sprite').appendChild(dialog)
+	dialog.style.top = -(parseInt(getComputedStyle(dialog).height)+ 12) + 'px'
+}
+speak('hello, ni shi bu shi yi tou zhu. 猪猪猪')
 </script>
 </body>
 </html>
