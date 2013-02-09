@@ -1,8 +1,8 @@
 var express = require('express')
 var sockjs  = require('sockjs')
 var http = require('http')
-var users = {}
-var handlers = {}
+var users = Object.create(null)
+var handlers = Object.create(null)
 var client = {
 	call : function(conn, name) {
 		var args = Array.prototype.slice.call(arguments, 2)

@@ -7,7 +7,7 @@
 	position: absolute;
 	width: 32px;
 	height: 32px;
-	background: #fff url(player.png) no-repeat top left ;	
+	background: url(player.png) no-repeat top left ;	
 }
 
 #container>div.up {
@@ -105,7 +105,7 @@
 	<button id="send">send</button>
 </div>
 <script>
-var sockjs = new SockJS('/endpoint'), handlers = {};
+var sockjs = new SockJS('/endpoint'), handlers = Object.create(null);
 var server = {
   call : function(name) {
     var args = Array.prototype.slice.call(arguments, 1);
@@ -261,7 +261,7 @@ var instructor = (function(){
 })()
 
 var sprite,
-	users = {},
+	users = Object.create(null),
 	requestAnimationFrame = webkitRequestAnimationFrame,
 	moving,
 	keys = [null, null, null, null],
