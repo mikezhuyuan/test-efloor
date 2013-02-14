@@ -1,35 +1,36 @@
 <!doctype html>
 <html>
 <head>
-<script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+<script src="sockjs-0.3.min.js"></script>
 <style type="text/css">
-#container>div{
+.sprite {
 	position: absolute;
 	width: 32px;
 	height: 32px;
-	background: url(player.png) no-repeat top left ;	
+	background: url(player.png) no-repeat top left;
 }
 
-#container>div.up {
+.up {
 	background-position: -32px -96px;
 }
 
-#container>div.down {
+.down {
 	background-position: -32px 0px;	
 }
 
-#container>div.left {
+.left {
 	background-position: -32px -32px;	
 }
 
-#container>div.right {
+.right {
 	background-position: -32px -64px;	
 }
 
-#container .dialog{
+.dialog{
 	position:absolute;
 	border:2px solid #ccc;
 	width:64px;
+	bottom: 40px;
 	overflow-x:hidden;
 	left:-16px;
 	font-size:12px;
@@ -140,15 +141,17 @@ function dispatch(data) {
 }
 
 var Sprite = (function() {
-	var speed = 0.08, maxInstruct=120
+	var speed = 0.05, maxInstruct=120
 	var type = function(id, x, y){
 		var dom = document.createElement('div')		
 		this.id = id
 		this.x = x
 		this.y = y		
 		this.dom = dom
+		this.orientation = null
 		this.status = 'stop'
 		this.instructs = []
+		dom.className = 'sprite'
 		dom.style.left = x + 'px'
 		dom.style.top = y + 'px'
 
@@ -178,6 +181,7 @@ var Sprite = (function() {
 		},
 		stop: function() {
 			this.dom.style.webkitAnimation = ''
+
 			this.status = 'stop'
 		},
 		move: function(x,y) {
@@ -196,8 +200,10 @@ var Sprite = (function() {
 
 			if (d) {
 				if(this.status != d) {
-					this.dom.style.webkitAnimation = d + ' .8s steps(2) infinite'			
-					this.dom.className = this.status = d
+					this.dom.style.webkitAnimation = d + ' .8s steps(2) infinite'
+
+					this.dom.classList.remove(this.orientation)
+					this.dom.classList.add(this.orientation = this.status = d)
 				}
 				
 				this.dom.style.left = (this.x = x) + 'px'
@@ -221,20 +227,35 @@ var Sprite = (function() {
 			}
 		},
 		speak: function(txt) {
-			if(this.dialog)
+			if(this._clearDialog)
+				clearTimeout(this._clearDialog);
+
+			if(this.dialog) {
 				this.dialog.parentNode.removeChild(this.dialog)
+				this.dialog = null
+			}
+
+			if(!txt)
+				return;
 
 			var dialog = document.createElement('div')
 			dialog.className = 'dialog'	
 			dialog.innerText = txt
 			this.dom.appendChild(dialog)
-			dialog.style.top = -(parseInt(getComputedStyle(dialog).height)+ 12) + 'px'
 			this.dialog = dialog
+
+			var _this = this
+			this._clearDialog = setTimeout(function(){
+				_this.speak(null)
+				_this._clearDialog = null
+			}, 10000);
 		},
 		destroy: function() {
 			this.dom.parentNode.removeChild(this.dom)
 			if(this.dialog)
 				this.dialog.parentNode.removeChild(this.dialog)
+
+			this._clearDialog && clearTimeout(this._clearDialog);
 		}
 	}
 
@@ -283,6 +304,7 @@ var sprite,
 	}
 
 function init(id, x, y, userArray){	
+	console.log('init')
 	sprite = new Sprite(id, x, y)
 
 	for(var i=0;i<userArray.length;i++){
