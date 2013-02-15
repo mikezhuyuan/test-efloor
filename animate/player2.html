@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>
+<style>
+
+</style>
+</head>
+
+<body>
+
+<div id="sprite">
+	
+</div>
+
+<script>
+var style = document.getElementById('style')
+var configs = [{	
+	name:'char01', 
+	width:32, 
+	height:32, 
+	image:'char01.png', 
+	duration:1, 
+	direction:{
+		down: ['0 0', '-32px 0', '-64px 0', '-32px 0'],
+		left: ['0 -32px', '-32px -32px', '-64px -32px', '-32px -32px'],
+		right: ['0 -64px', '-32px -64px', '-64px -64px', '-32px -64px'],
+		up: ['0 -96px', '-32px -96px', '-64px -96px', '-32px -96px']
+	}
+},{	
+	name:'char02', 
+	width:32, 
+	height:32, 
+	image:'char02.png', 
+	duration:1, 
+	direction:{
+		down: ['0 0', '-32px 0', '-64px 0', '-32px 0'],
+		left: ['0 -32px', '-32px -32px', '-64px -32px', '-32px -32px'],
+		right: ['0 -64px', '-32px -64px', '-64px -64px', '-32px -64px'],
+		up: ['0 -96px', '-32px -96px', '-64px -96px', '-32px -96px']
+	}
+}]
+
+var store = Object.create(null)
+function add(config) {
+	store[config.name] = config
+	var clazz = '.' + config.name + '{' +
+	'position: absolute;' +
+	'width: ' + config.width + 'px;' +
+	'height: ' + config.height + 'px;' +
+	'background: url(' + config.image + ') no-repeat top left;' +
+	'}',
+	direction = config.direction
+
+	for(var prop in direction) {
+		var kf = '@-webkit-keyframes ' + config.name + '-' + prop + '{',
+			d = direction[prop]
+		for(var i=0, l=d.length; i<l; i++) {
+			 kf += (100*i/l) + '%{' + 
+			 'background-position:' + d[i] + ';' +
+			 '}'
+		}
+
+		document.styleSheets[0].insertRule(kf + '}', 0)
+	}
+
+	document.styleSheets[0].insertRule(clazz, 0)
+}
+
+function animation(name, direction) {
+	return name + '-' + direction + ' ' + store[name].duration + 's step-end infinite'
+}
+
+var sprite = document.getElementById('sprite')
+for(var i=0;i<configs.length;i++)
+	add(configs[i])
+
+sprite.className = 'char01'
+sprite.style.webkitAnimation = animation('char01','down')
+</script>
+</body>
+</html>

@@ -148,7 +148,7 @@ var Sprite = (function() {
 		this.x = x
 		this.y = y		
 		this.dom = dom
-		this.orientation = null
+		this.direction = null
 		this.status = 'stop'
 		this.instructs = []
 		dom.className = 'sprite'
@@ -202,8 +202,8 @@ var Sprite = (function() {
 				if(this.status != d) {
 					this.dom.style.webkitAnimation = d + ' .8s steps(2) infinite'
 
-					this.dom.classList.remove(this.orientation)
-					this.dom.classList.add(this.orientation = this.status = d)
+					this.dom.classList.remove(this.direction)
+					this.dom.classList.add(this.direction = this.status = d)
 				}
 				
 				this.dom.style.left = (this.x = x) + 'px'
@@ -288,10 +288,10 @@ var sprite,
 	keys = [null, null, null, null],
 	start = Date.now(),
 	keyCount = 1,
-	orientation = ['left','up','right','down'],
+	direction = ['left','up','right','down'],
 	loop = function(time) {
 		if(moving && moving >= 37 && moving <= 40) {
-			sprite.walk(orientation[moving - 37], time - start)
+			sprite.walk(direction[moving - 37], time - start)
 			instructor.add(sprite.position())
 		}
 
