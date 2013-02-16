@@ -1,0 +1,280 @@
+<!doctype html>
+<html>
+<head>
+<script src="sockjs-0.3.min.js"></script>
+<script src="jquery.js"></script>
+<script src="require.js"></script>
+<style type="text/css">
+.dialog{
+	position:absolute;
+	border:2px solid #ccc;
+	width:64px;
+	bottom: 40px;
+	overflow-x:hidden;
+	left:-16px;
+	font-size:12px;
+}
+
+.userName {
+	position: absolute;
+	width: 48px;
+	top: 32px;
+	text-align: center;
+	font-size: 12px;
+	left: -8px;
+}
+
+.left-triangle {
+   width: 0;
+   height: 0;
+   border-right: 10px solid orange;
+   border-top: 5px solid transparent;
+   border-bottom: 5px solid transparent;
+}
+
+.right-triangle {
+   width: 0;
+   height: 0;
+   border-left: 10px solid orange;
+   border-top: 5px solid transparent;
+   border-bottom: 5px solid transparent;
+}
+
+.left-triangle:hover{
+	border-right: 10px solid red;
+	cursor: pointer;
+}
+
+.right-triangle:hover{
+	border-left: 10px solid red;
+	cursor: pointer;
+}
+
+#choose_sprite{
+	position: static;
+}
+</style>
+</head>
+
+<body>
+<div id="starter">
+	<div id="choose_sprite"></div>	
+	<div style="width:32px; margin-top: 5px; overflow: auto">
+		<div id="prevChar" class="left-triangle" style="float: left"></div>
+		<div id="nextChar" class="right-triangle" style="float: right"></div>
+	</div>
+	<div>
+		Name: <input id="userName" value="pig" /> <button id="gameStart">Go!</button>
+	</div>
+</div>
+
+<div id="gameboard" style="display:none">
+<div>
+	<input id="dialog" />
+	<button id="send">send</button>
+</div>
+</div>
+<script>
+require(['sprite', 'chars'], function(Sprite, config){	
+	Sprite.initialize(config)
+	var s = document.getElementById('choose_sprite'),
+		all = Sprite.all(),
+		current = 0
+
+	s.className = all[0]
+
+	function changeChar(char){
+		s.className = char
+	}
+
+	$('#prevChar').click(function(){
+		current--;
+		if(current < 0)
+			current = all.length - 1
+		changeChar(all[current])
+	})
+
+	$('#nextChar').click(function(){
+		current++;
+		if(current >= all.length)
+			current = 0 
+		changeChar(all[current])
+	})
+
+	$('#gameStart').click(function(){
+		var name = $('#userName').val(), charName = all[current]
+		server.call('init', {name:name, charName:charName})
+	})
+
+	var sockjs = new SockJS('/endpoint'), handlers = Object.create(null);
+	var server = {
+	  call : function(name) {
+	    var args = Array.prototype.slice.call(arguments, 1);
+	    sockjs.send(JSON.stringify({method:name, args:args}));
+	  }
+	}
+
+	var client = {
+	  register : function(name, handler) {
+	    handlers[name] = handler;
+	  }   
+	};
+
+	sockjs.onopen = function()  {
+	  console.log('connected');
+
+	  sockjs.onmessage = function(e) {
+	    console.log('onmessage: ' + e);            
+	    dispatch(JSON.parse(e.data));
+	  };	  
+	};
+
+	sockjs.onclose = function()  {
+	  console.log('disconnected');
+	};
+
+	function dispatch(data) {
+	  var h;
+	  (h = handlers[data.method]) && h.apply(null, data.args);          
+	}
+
+	var instructor = (function(){
+		var maxInstruct=60, instructs = []
+
+		return {
+			add: function(pos) {
+				if(instructs.length >= maxInstruct) {
+					this.execute()
+				}
+				instructs.push(pos)
+			}, 
+			execute: function() {
+				if(instructs.length) {				
+					server.call('instructUser', instructs)
+					instructs = []
+				}
+			}
+		}
+	})()
+
+	var sprite,
+		users = Object.create(null),
+		requestAnimationFrame = webkitRequestAnimationFrame,
+		moving,
+		keys = [null, null, null, null],
+		start = Date.now(),
+		keyCount = 1,
+		direction = ['left','up','right','down'],
+		loop = function(time) {
+			if(moving && moving >= 37 && moving <= 40) {
+				sprite.walk(direction[moving - 37], time - start)
+				instructor.add(sprite.position())
+			}
+
+			for(var id in users) {
+				users[id].next()
+			}
+
+			start = time
+			requestAnimationFrame(loop)
+		}
+
+	function init(user, users){			
+		console.log('init')
+
+		$('#starter').remove()
+		$('#gameboard').show()
+		
+
+		sprite = Sprite.create(user)
+		$('#gameboard').append(sprite.dom)
+
+		for(var i=0;i<users.length;i++){
+			var u = users[i]
+			addUser(u)
+		}
+
+		document.onkeydown = function(k){
+			var c = k.keyCode
+			if(c >= 37 && c <= 40) {		
+				keys[c - 37] = keyCount++
+				moving = c
+			}
+		}
+
+		document.onkeyup = function(k){
+			var c = k.keyCode
+
+			if(c >= 37 && c <= 40) {
+				keys[c - 37] = null
+
+				var maxKey = Math.max.apply(null,keys)		
+				if(keys[0] === maxKey) {
+					moving = 37
+				} else if (keys[1] === maxKey) {
+					moving = 38
+				} else if (keys[2] === maxKey) {
+					moving = 39
+				} else if (keys[3] === maxKey) {
+					moving = 40
+				} else {
+					keyCount = 1
+					moving = false
+					sprite.stop()
+					instructor.execute()
+				}
+			}
+		}
+
+		document.getElementById('send').onclick = function(){
+			var txt = document.getElementById('dialog').value
+			sprite.speak(txt)
+			server.call('userSpeak', txt)
+		}
+
+		loop()
+	}
+
+	function addUser(user) {
+		var s = Sprite.create(user)
+		users[user.id] = s
+
+		$('#starter').remove()
+		$('#gameboard').append(s.dom)
+	}
+
+	function deleteUser(id){
+		var u = users[id]
+		if(u) {
+			u.destroy()
+			delete users[id]
+		}
+	}
+
+	function instructUser(id, instructs) {
+		var u = users[id]
+		if(u) {
+			u.instruct(instructs)
+		}
+	}
+
+	function userSpeak(id, txt) {
+		var u = users[id]
+		if(u) {
+			u.speak(txt)
+		}
+	}
+
+	client.register('addUser', addUser);
+
+	client.register('deleteUser', deleteUser);
+
+	client.register('instructUser', instructUser);
+
+	client.register('userSpeak', userSpeak); 
+
+	client.register('init', init); 
+})
+</script>
+</body>
+</html>

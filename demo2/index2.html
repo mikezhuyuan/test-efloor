@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+<style>
+.left-triangle {
+   width: 0;
+   height: 0;
+   border-right: 10px solid orange;
+   border-top: 5px solid transparent;
+   border-bottom: 5px solid transparent;
+}
+
+.right-triangle {
+   width: 0;
+   height: 0;
+   border-left: 10px solid orange;
+   border-top: 5px solid transparent;
+   border-bottom: 5px solid transparent;
+}
+
+.left-triangle:hover{
+	border-right: 10px solid red;
+	cursor: pointer;
+}
+
+.right-triangle:hover{
+	border-left: 10px solid red;
+	cursor: pointer;
+}
+
+#container .sprite{
+	position: static;
+}
+
+</style>
+<script src="jquery.js"></script>
+<script src="require.js"></script>
+</head>
+
+<body>
+<div id="container"></div>
+
+<div style="width:32px; margin-top: 5px; overflow: auto">
+	<div id="prevChar" class="left-triangle" style="float: left"></div>
+	<div id="nextChar" class="right-triangle" style="float: right"></div>
+</div>
+<script>
+require(['sprite', 'chars'], function(sprite, config){
+	sprite.initialize(config)
+	var all = sprite.all(),
+		current = 0,
+		s = sprite.create(-1, null, 'char01', 10, 10)
+
+	$('#container').append(s.dom)
+	s.animate()
+
+	function changeChar(char){
+		s.dom.className = char		
+	}
+
+	$('#prevChar').click(function(){
+		current--;
+		if(current < 0)
+			current = all.length - 1
+		changeChar(all[current])
+	})
+
+	$('#nextChar').click(function(){
+		current++;
+		if(current >= all.length)
+			current = 0 
+		changeChar(all[current])
+	})
+})
+</script>
+</body>
+</html>
