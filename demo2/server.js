@@ -109,8 +109,8 @@ server.register('init', function(conn, data){
 	})
 })
 
-server.register('instructUser', function(conn, instructs){
-	var id = conn.id, pos = instructs[instructs.length-1]
+server.register('instructUser', function(conn, pos, instructs){
+	var id = conn.id
 	users[id].position(pos)
 
 	broadcast(id, function(user){

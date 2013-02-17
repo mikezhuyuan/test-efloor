@@ -1,7 +1,7 @@
 define(function(){
 	var store = Object.create(null),
-		speed = 0.05, 
-		maxInstruct = 120
+		SPEED = 0.05, 
+		MAX_INSTR = 120
 
 	function add(config) {
 		store[config.name] = config
@@ -28,8 +28,8 @@ define(function(){
 		document.styleSheets[0].insertRule(clazz, 0)
 	}
 
-	var animation = function(name, direction, duration) {
-		return name + '-' + direction + ' ' + (duration || store[name].duration) + 's step-end infinite'
+	var animation = function(name, direction) {
+		return name + '-' + direction + ' .8s step-end infinite'
 	}
 
 	var Sprite = function(id, name, charName, x, y){
@@ -60,7 +60,7 @@ define(function(){
 			return {x:this.x, y:this.y}
 		},
 		walk: function(direction, duration) {
-			var d = speed * duration
+			var d = SPEED * duration
 			switch(direction){
 				case 'left':
 				this.move(this.x - d, this.y)
@@ -78,10 +78,6 @@ define(function(){
 		},
 		stop: function() {
 			this.dom.style.webkitAnimationPlayState = this.status = 'paused'			
-		},
-		animate: function(){
-			this.dom.style.webkitAnimationPlayState = 'running'
-			this.status = this.direction
 		},
 		move: function(x,y) {
 			x = Math.round(x)
@@ -115,8 +111,8 @@ define(function(){
 			if(posArray && posArray.length)
 				Array.prototype.push.apply(this.instructs, posArray)
 
-			if(this.instructs.length > maxInstruct) {
-				this.instructs.splice(0, this.instructs.length - maxInstruct)
+			if(this.instructs.length > MAX_INSTR) {
+				this.instructs.splice(0, this.instructs.length - MAX_INSTR)
 			}
 		},
 		next: function() {

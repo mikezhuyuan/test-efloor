@@ -4,7 +4,6 @@ define(function(){
 		"width":32, 
 		"height":32, 
 		"image":"char01.png", 
-		"duration":1, 
 		"direction":{
 			"down": ["0 0", "-32px 0", "-64px 0", "-32px 0"],
 			"left": ["0 -32px", "-32px -32px", "-64px -32px", "-32px -32px"],
@@ -16,7 +15,6 @@ define(function(){
 		"width":32, 
 		"height":32, 
 		"image":"char02.png", 
-		"duration":1, 
 		"direction":{
 			"down": ["0 0", "-32px 0", "-64px 0", "-32px 0"],
 			"left": ["0 -32px", "-32px -32px", "-64px -32px", "-32px -32px"],
@@ -28,7 +26,6 @@ define(function(){
 		"width":32, 
 		"height":32, 
 		"image":"char03.png", 
-		"duration":1, 
 		"direction":{
 			"down": ["0 0", "-32px 0", "-64px 0", "-32px 0"],
 			"left": ["0 -32px", "-32px -32px", "-64px -32px", "-32px -32px"],
@@ -40,7 +37,6 @@ define(function(){
 		"width":32, 
 		"height":32, 
 		"image":"char04.png", 
-		"duration":1, 
 		"direction":{
 			"down": ["0 0", "-32px 0", "-64px 0", "-32px 0"],
 			"left": ["0 -32px", "-32px -32px", "-64px -32px", "-32px -32px"],
@@ -52,7 +48,6 @@ define(function(){
 		"width":32, 
 		"height":32, 
 		"image":"char05.png", 
-		"duration":1, 
 		"direction":{
 			"down": ["0 0", "-32px 0", "-64px 0", "-32px 0"],
 			"left": ["0 -32px", "-32px -32px", "-64px -32px", "-32px -32px"],
