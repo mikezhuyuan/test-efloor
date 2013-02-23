@@ -1,6 +1,5 @@
 define(['sockjs'], function(SockJS){
 	var sockjs, 
-		handlers = Object.create(null),
 		obj;
 
 	return {
@@ -12,7 +11,7 @@ define(['sockjs'], function(SockJS){
 		  sockjs.onmessage = function(e) {
 		    //console.log('onmessage: ' + e);            
 		    var data = JSON.parse(e.data), h;		    
-	  		(h = handlers[data.method]) && h.apply(null, data.args);
+	  		(h = _this.client[data.method]) && h.apply(null, data.args);
 		  };
 
 		  callback && callback()
@@ -29,8 +28,6 @@ define(['sockjs'], function(SockJS){
 	    sockjs.send(JSON.stringify({method:name, args:args}));
 	  },
 
-	  client : function(name, handler) {
-	    handlers[name] = handler;
-	  }
+	  client : Object.create(null)
 	};
 })

@@ -259,15 +259,15 @@ require(['sprite', 'chars', 'net'], function(Sprite, config, net){
 		}
 	}
 
-	net.client('addUser', addUser);
+	net.client.addUser = addUser;
 
-	net.client('deleteUser', deleteUser);
+	net.client.deleteUser = deleteUser;
 
-	net.client('instructUser', instructUser);
+	net.client.instructUser = instructUser;
 
-	net.client('userSpeak', userSpeak); 
+	net.client.userSpeak = userSpeak; 
 
-	net.client('init', init); 
+	net.client.init = init; 
 })
 </script>
 </body>
