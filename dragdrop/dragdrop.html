@@ -2,23 +2,29 @@
 <html>
 <head>
 	<style>
+	
+	#list {
+		border: 1px solid #cbcbcb;
+		float: left;
+		margin:10px;
+		width: 128px;
+	}
+
 	#container{
 		border: 1px solid #cbcbcb;
+		float: left;
+		margin:10px;
 	}
 	
 	#map > div{		
 		position:absolute;
 	}
 	
-	.class1{
-		width:32px;
-		height:32px;
-		background-image: url('sprites.png');
-		background-repeat:no-repeat;
-		background-position:right top;
-		background-position: 0px 0px;
+	#list > div {
+		margin:10px;
+		float:left;
 	}
-
+	
 	.class1{
 		width:32px;
 		height:48px;
@@ -55,6 +61,7 @@
 		font-size:12px;
 		text-align: center;
 	}
+	
 	</style>
 	<script src="jquery.js" type="text/javascript"></script>
 </head>
@@ -65,7 +72,7 @@
 	<div class="class2"></div>
 	<div class="class3"></div>
 </div>
-<div id="container" style="width:800px;height:600px;overflow:hidden;position:relative;margin:auto">
+<div id="container" style="width:800px;height:600px;overflow:hidden;position:relative;>
 	<div id="map">
 		
 	</div>
@@ -74,19 +81,27 @@
 
 function main() {
 	var $body = $('body');
+	
+	//sprite list
 	$('#list div').mousedown(function(e){
 		var $this = $(this);
-		var el = $this.clone();
-
-		el.css({position:"absolute", top:e.pageY-24 + "px", left:e.pageX - 16 + "px", cursor:"move"});
-		$body.append(el);
+		var $el = $this.clone();
+		var width = $this.width();
+		var height = $this.height();
+		
+		$el.css({position:"absolute", top:e.pageY-(height/2) + "px", left:e.pageX - (width/2) + "px"});
+		$body.append($el);
 
 		$body.mousemove(function(e){
-			el.css({position:"absolute", top:e.pageY-24 + "px", left:e.pageX - 16 + "px"});
-		}).mouseup(function(e){			
+			$el.css({position:"absolute", top:e.pageY-(height/2) + "px", left:e.pageX - (width/2) + "px"});
+		})
+		.mouseup(function(e){			
 			$body.unbind('mousemove').unbind('mouseup');
+			$el.remove();
 		});
-	})
+	});
+	
+	
 }
 
 $(function(){
